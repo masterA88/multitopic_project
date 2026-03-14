@@ -4,3 +4,18 @@ env/
 .venv/
 __pycache__/
 *.pyc
+
+
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.pdf
+!docs/*.pdf
