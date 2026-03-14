@@ -1,0 +1,295 @@
+(venv) PS D:\Research (Read every day!)\Project Data\mentoring\multitopic_project> python step1_eda_preprocessing.py
+======================================================================
+STEP 1: EXPLORATORY DATA ANALYSIS & PREPROCESSING VERIFICATION
+======================================================================
+
+[INFO] Dataset loaded: 3704 rows, 12 columns
+[INFO] Columns: ['shortcode', 'post_url', 'username', 'text', 'created_at', 'text_clean', 'text_norm', 'tokens', 'tokens_clean', 'tokens_stem', 'final_text', 'label_emosi']
+
+--- Data Cleaning ---
+Missing values in 'final_text': 2
+Missing values in 'label_emosi': 2
+[INFO] After cleaning: 3700 rows
+
+--- Label Distribution ---
+             Count  Percentage (%)
+label_emosi
+netral        2704           73.08
+joy            637           17.22
+anger          235            6.35
+sadness         84            2.27
+fear            40            1.08
+
+Total samples: 3700
+Imbalance ratio (majority/minority): 67.60
+
+[SAVED] fig1_label_distribution.png
+[SAVED] fig2_text_length_analysis.png
+
+--- Text Length Statistics per Emotion ---
+              count  mean    std  min  25%  50%    75%    max
+label_emosi
+anger         235.0  8.45   7.61  1.0  4.0  6.0  11.00   48.0
+fear           40.0  9.88  17.94  1.0  2.0  4.0  10.25  110.0
+joy           637.0  4.02   4.12  1.0  1.0  3.0   5.00   40.0
+netral       2704.0  4.92   6.33  1.0  2.0  3.0   6.00  134.0
+sadness        84.0  9.35   8.56  1.0  3.0  7.0  12.00   40.0
+[SAVED] fig3_word_frequency_per_emotion.png
+
+[SAVED] Cleaned dataset: outputs\data_cleaned.csv
+[INFO] Final dataset shape: (3700, 13)
+
+--- Dataset Summary ---
+  Total Samples: 3700
+  Unique Labels: 5
+  Labels: anger, fear, joy, netral, sadness
+  Avg Text Length (words): 5.15
+  Median Text Length (words): 3.0
+  Vocabulary Size (approx): 5956
+  Imbalance Ratio: 67.6
+
+[DONE] Step 1 completed successfully.
+(venv) PS D:\Research (Read every day!)\Project Data\mentoring\multitopic_project> python step2_feature_engineering.py
+======================================================================
+STEP 2: TF-IDF & MULTI-TOPIC LSA FEATURE ENGINEERING
+======================================================================
+[INFO] Loaded: 3700 samples
+
+--- Class Consolidation ---
+Original distribution:
+label_emosi
+netral     2704
+joy         637
+anger       235
+sadness      84
+fear         40
+
+3-class distribution:
+label_3class
+netral      2704
+joy          637
+negative     359
+[SAVED] fig4a_class_consolidation.png
+
+[INFO] Label mapping: {'joy': np.int64(0), 'negative': np.int64(1), 'netral': np.int64(2)}
+
+--- TF-IDF Vectorization ---
+[INFO] TF-IDF shape: (3700, 1556)
+
+--- Single-Topic LSA ---
+  k=  5: explained_var=0.0623, shape=(3700, 5), time=0.06s
+  k= 10: explained_var=0.1002, shape=(3700, 10), time=0.09s
+  k= 25: explained_var=0.1722, shape=(3700, 25), time=0.24s
+  k= 50: explained_var=0.2545, shape=(3700, 50), time=0.47s
+  k=100: explained_var=0.3666, shape=(3700, 100), time=1.10s
+
+--- Multi-Topic LSA Feature Construction (NOVELTY) ---
+[INFO] Multi-topic shape: (3700, 190) (190 features)
+
+--- Top Terms per Topic (k=10) ---
+  Topic 1: risma, bu, bu risma, jatim, nyala, luluk, bu luluk
+  Topic 2: admin, kasih, terima, terima kasih, kak, ya, jtv
+  Topic 3: nyala, lur, ning, nyala lur, abang, ku, anita
+  Topic 4: admin, request, lagu, request lagu, ta, undang, ya admin
+  Topic 5: keren, banget, keren banget, kali, ning, nih, admin
+  Topic 6: kak, ya, atas, like, post, post atas, like post
+  Topic 7: lur, mas, luluk, jatim, bu luluk, lukman, ya
+  Topic 8: lur, ya, risma, jtv, bu risma, ya lur, lupa
+  Topic 9: ya, jtv, sukses, jatim, moga, rek, selamat
+  Topic 10: jatim, kak, pilih, maju, lur, jatim maju, baik
+
+[SAVED] fig4_lsa_explained_variance.png
+
+--- Train-Test Split (80/20, stratified) ---
+[INFO] Multi-topic train: (2960, 190), test: (740, 190)
+
+[INFO] Train distribution:
+  joy: 510 (17.2%)
+  negative: 287 (9.7%)
+  netral: 2163 (73.1%)
+[INFO] Test distribution:
+  joy: 127 (17.2%)
+  negative: 72 (9.7%)
+  netral: 541 (73.1%)
+
+[DONE] Step 2 completed.
+(venv) PS D:\Research (Read every day!)\Project Data\mentoring\multitopic_project> 
+
+
+
+(venv) PS D:\Research (Read every day!)\Project Data\mentoring\multitopic_project> python step3_experiments.py
+======================================================================
+STEP 3: COMPLETE EXPERIMENT SUITE
+======================================================================
+[INFO] Train: 2960, Test: 740
+[INFO] Classes: ['joy', 'negative', 'netral']
+[INFO] Train distribution: {'joy': np.int64(510), 'negative': np.int64(287), 'netral': np.int64(2163)}
+[INFO] Test  distribution: {'joy': np.int64(127), 'negative': np.int64(72), 'netral': np.int64(541)}
+
+============================================================
+3A. Individual Models per LSA Granularity (+ SMOTE)
+============================================================
+  k=  5: RF=0.4344, SVM=0.3240, XGB=0.4557 (F1-macro)
+  k= 10: RF=0.4750, SVM=0.3648, XGB=0.4844 (F1-macro)
+  k= 25: RF=0.5070, SVM=0.4353, XGB=0.4941 (F1-macro)
+  k= 50: RF=0.4990, SVM=0.4664, XGB=0.5004 (F1-macro)
+  k=100: RF=0.4851, SVM=0.4798, XGB=0.5116 (F1-macro)
+
+============================================================
+3B. Stacking Ensemble per Granularity (+ SMOTE)
+============================================================
+  k=  5: acc=0.5946, f1w=0.6182, f1m=0.4441  (20s)
+  k= 10: acc=0.6297, f1w=0.6484, f1m=0.4937  (20s)
+  k= 25: acc=0.6554, f1w=0.6669, f1m=0.5087  (21s)
+  k= 50: acc=0.6581, f1w=0.6654, f1m=0.4995  (24s)
+  k=100: acc=0.6608, f1w=0.6629, f1m=0.4801  (38s)
+
+  >>> Best single-topic stacking: k=25 (F1-macro=0.5087)
+
+============================================================
+3C. TF-IDF Baseline (No LSA)
+============================================================
+  TF-IDF: acc=0.5703, f1w=0.5630, f1m=0.3042
+
+============================================================
+3D. Stacking WITHOUT SMOTE (SMOTE Effectiveness Analysis)
+============================================================
+  k=  5: acc=0.7716, f1w=0.7143, f1m=0.4493
+  k= 10: acc=0.7662, f1w=0.7114, f1m=0.4475
+  k= 25: acc=0.7568, f1w=0.7081, f1m=0.4562
+  k= 50: acc=0.7622, f1w=0.7222, f1m=0.5011
+  k=100: acc=0.7527, f1w=0.7079, f1m=0.4704
+
+============================================================
+3E. Multi-Topic Concatenation + Stacking + SMOTE
+============================================================
+  Multi-topic (190 dims): acc=0.6649, f1w=0.6684, f1m=0.4957
+
+  Classification Report:
+              precision    recall  f1-score   support
+
+         joy       0.37      0.56      0.45       127
+    negative       0.38      0.21      0.27        72
+      netral       0.80      0.75      0.77       541
+
+    accuracy                           0.66       740
+   macro avg       0.51      0.51      0.50       740
+weighted avg       0.68      0.66      0.67       740
+
+============================================================
+3F. Multi-Topic Concatenation WITHOUT SMOTE
+============================================================
+  Multi-topic (no SMOTE): acc=0.7500, f1w=0.7062, f1m=0.4688
+
+======================================================================
+EXPERIMENT SUMMARY
+======================================================================
+
+--- LSA Granularity Comparison (Stacking + SMOTE) ---
+        model  accuracy  f1_weighted  f1_macro
+  Stacking_k5    0.5946       0.6182    0.4441
+ Stacking_k10    0.6297       0.6484    0.4937
+ Stacking_k25    0.6554       0.6669    0.5087
+ Stacking_k50    0.6581       0.6654    0.4995
+Stacking_k100    0.6608       0.6629    0.4801
+
+--- SMOTE Effectiveness (Stacking, paired by k) ---
+  k  F1m_SMOTE  F1m_NoSMOTE  F1m_Delta  Acc_SMOTE  Acc_NoSMOTE  Acc_Delta
+  5     0.4441       0.4493    -0.0052     0.5946       0.7716    -0.1770
+ 10     0.4937       0.4475     0.0462     0.6297       0.7662    -0.1365
+ 25     0.5087       0.4562     0.0525     0.6554       0.7568    -0.1014
+ 50     0.4995       0.5011    -0.0016     0.6581       0.7622    -0.1041
+100     0.4801       0.4704     0.0097     0.6608       0.7527    -0.0919
+
+--- Multi-Topic vs Best Single-Topic ---
+  Best single-topic:     Stacking_k25 F1m=0.5087
+  Multi-topic concat:    MultiTopic_Concat_SMOTE F1m=0.4957
+  Delta: -0.0130 (-1.30%)
+
+--- Top 5 Models by F1-Macro ---
+               model  accuracy  f1_weighted  f1_macro smote
+            XGB_k100    0.6635       0.6727    0.5116   yes
+        Stacking_k25    0.6554       0.6669    0.5087   yes
+              RF_k25    0.6473       0.6618    0.5070   yes
+Stacking_k50_NoSMOTE    0.7622       0.7222    0.5011    no
+             XGB_k50    0.6338       0.6509    0.5004   yes
+
+[SAVED] all_results.csv
+[SAVED] smote_analysis.csv
+[SAVED] y_pred_best.npy, y_pred_proba_best.npy
+[DONE] Step 3 completed.
+(venv) PS D:\Research (Read every day!)\Project Data\mentoring\multitopic_project> 
+
+
+
+
+(venv) PS D:\Research (Read every day!)\Project Data\mentoring\multitopic_project> python step4_evaluation.py
+======================================================================
+STEP 4: PUBLICATION-READY EVALUATION
+======================================================================
+[INFO] Classes: ['joy', 'negative', 'netral']
+[INFO] Total experiments: 28
+[INFO] Best model: XGB_k100 (F1m=0.5116)
+[SAVED] fig5_granularity_comparison.png
+[SAVED] fig6_smote_effectiveness.png
+[SAVED] fig7_individual_vs_stacking.png
+[SAVED] fig8_multitopic_vs_singletopic.png
+[SAVED] fig9_confusion_matrix.png
+[SAVED] fig10_confusion_matrix_norm.png
+[SAVED] fig11_roc_curves.png
+[SAVED] fig12_precision_recall.png
+[SAVED] fig13_per_class.png
+
+--- Generating Tables ---
+[SAVED] All tables and LaTeX files
+
+======================================================================
+PUBLICATION SUMMARY
+======================================================================
+
+1. DATASET
+   Total samples: 3700
+   Original classes: 5 (joy, anger, sadness, fear, netral)
+   Consolidated classes: 3 (joy, negative, netral)
+   Justification: fear (40), sadness (84) insufficient for classification
+
+2. OPTIMAL LSA GRANULARITY
+   Best k = 25 (F1-macro=0.5087)
+   Tested: k ∈ {5, 10, 25, 50, 100}
+
+3. STACKING vs INDIVIDUAL MODELS
+   Best individual: XGB_k100 (F1-macro=0.5116)
+   Best stacking:   Stacking_k25 (F1-macro=0.5087)
+   Stacking improvement: -0.29%
+
+4. SMOTE EFFECTIVENESS
+   Avg F1-macro gain with SMOTE: +0.0203 (+2.03%)
+   Avg accuracy change with SMOTE: -0.1222 (-12.22%)
+   Finding: SMOTE improves minority class recall at cost of accuracy
+
+5. MULTI-TOPIC vs SINGLE-TOPIC
+   Multi-topic concat (190 dims): F1-macro=0.4957
+   Best single-topic (k=25): F1-macro=0.5087
+   Delta: -1.30%
+   Finding: Multi-topic concatenation does NOT improve performance
+   Reason: LSA components overlap across k (short texts, median 3 words)
+
+6. BEST MODEL CLASSIFICATION REPORT
+              precision    recall  f1-score   support
+
+         joy       0.36      0.57      0.44       127
+    negative       0.38      0.28      0.32        72
+      netral       0.81      0.72      0.77       541
+
+    accuracy                           0.66       740
+   macro avg       0.52      0.53      0.51       740
+weighted avg       0.69      0.66      0.67       740
+
+          joy ROC-AUC = 0.7746
+     negative ROC-AUC = 0.7291
+       netral ROC-AUC = 0.7243
+
+[OUTPUT] Figures: outputs\figures/ (14 files)
+[OUTPUT] Tables:  outputs\tables/ (10 files)
+[DONE] Step 4 completed. All publication materials generated.
+(venv) PS D:\Research (Read every day!)\Project Data\mentoring\multitopic_project> 

@@ -1,0 +1,8 @@
+Model,Accuracy,F1-Weighted,F1-Macro
+Stacking_k5,0.5946,0.6182,0.4441
+Stacking_k10,0.6297,0.6484,0.4937
+Stacking_k25,0.6554,0.6669,0.5087
+Stacking_k50,0.6581,0.6654,0.4995
+Stacking_k100,0.6608,0.6629,0.4801
+Stacking_TF-IDF,0.5703,0.563,0.3042
+MultiTopic_Concat_SMOTE,0.6649,0.6684,0.4957
